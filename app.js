@@ -1,10 +1,10 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '1.0.2';
+  const APP_VERSION = '1.0.3';
   const APP_VERSION_KEY = 'contacarga-app-version';
   const STORAGE_KEY = 'contacarga-state-v1';
-  const defaultState = { currentCount: 0, history: [], total: 0 };
+  const createDefaultState = () => ({ currentCount: 0, history: [], total: 0, session: null });
   let state = loadState();
   let wakeLock = null;
   let toastTimer;
@@ -30,12 +30,23 @@
     list: document.querySelector('#historyList'),
     total: document.querySelector('#totalCount'),
     stopCount: document.querySelector('#stopCount'),
+    sessionMeta: document.querySelector('#sessionMeta'),
     export: document.querySelector('#exportButton'),
     clear: document.querySelector('#clearButton'),
     toast: document.querySelector('#toast'),
     wake: document.querySelector('#wakeButton'),
-    status: document.querySelector('#sessionStatus')
+    status: document.querySelector('#sessionStatus'),
+    modalBackdrop: document.querySelector('#modalBackdrop'),
+    setupModal: document.querySelector('#setupModal'),
+    operationDate: document.querySelector('#operationDate'),
+    romaneioNumber: document.querySelector('#romaneioNumber'),
+    startCount: document.querySelector('#startCountButton'),
+    confirmModal: document.querySelector('#confirmModal'),
+    confirmMessage: document.querySelector('#confirmMessage'),
+    cancelConfirm: document.querySelector('#cancelConfirmButton'),
+    acceptConfirm: document.querySelector('#acceptConfirmButton')
   };
+  let pendingConfirmation = null;
 
   async function clearRuntimeCaches(unregisterServiceWorkers = false) {
     if ('caches' in window) {
@@ -69,14 +80,15 @@
   function loadState() {
     try {
       const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      if (!stored || !Array.isArray(stored.history)) return { ...defaultState };
+      if (!stored || !Array.isArray(stored.history)) return createDefaultState();
       return {
         currentCount: Number.isFinite(stored.currentCount) ? stored.currentCount : 0,
         history: stored.history,
-        total: Number.isFinite(stored.total) ? stored.total : 0
+        total: Number.isFinite(stored.total) ? stored.total : 0,
+        session: stored.session || null
       };
     } catch (error) {
-      return { ...defaultState };
+      return createDefaultState();
     }
   }
 
@@ -92,7 +104,12 @@
     elements.undo.disabled = state.currentCount === 0;
     elements.export.disabled = state.history.length === 0;
     elements.clear.disabled = state.history.length === 0;
-    elements.status.textContent = state.currentCount > 0 ? 'Lote em andamento' : 'Pronto para contar';
+    elements.status.textContent = state.session
+      ? (state.currentCount > 0 ? `Romaneio ${state.session.romaneio}` : 'Pronto para contar')
+      : 'Informe os dados para iniciar';
+    elements.sessionMeta.textContent = state.session
+      ? `Data: ${state.session.date} | Romaneio: ${state.session.romaneio}`
+      : 'Nova contagem';
 
     if (state.history.length === 0) {
       elements.list.innerHTML = '<div class="empty-state"><span class="empty-icon" aria-hidden="true">&#9678;</span><p>Nenhuma parada salva ainda.</p><small>Use a pinça com dois dedos ou toque em Opcoes.</small></div>';
@@ -114,6 +131,10 @@
   }
 
   function count() {
+    if (!state.session) {
+      openSetupModal();
+      return;
+    }
     state.currentCount += 1;
     persist();
     render();
@@ -163,21 +184,21 @@
   }
 
   async function refreshApplication() {
-    if (!window.confirm('Atualizar o aplicativo e limpar o cache antigo? Seus dados de contagem serao preservados.')) return;
-    if (!window.confirm('Confirmacao final: limpar cache e recarregar agora?')) return;
-    if (appReloading) return;
-    if (!navigator.onLine) {
-      showToast('Conecte-se a internet para atualizar o aplicativo.');
-      return;
-    }
-    appReloading = true;
-    try {
-      await clearRuntimeCaches(true);
-      window.location.reload();
-    } catch (error) {
-      appReloading = false;
-      showToast('Nao foi possivel limpar o cache agora.');
-    }
+    requestConfirmation('Atualizar o aplicativo e limpar o cache antigo? Seus dados serao preservados.', async () => {
+      if (appReloading) return;
+      if (!navigator.onLine) {
+        showToast('Conecte-se a internet para atualizar o aplicativo.');
+        return;
+      }
+      appReloading = true;
+      try {
+        await clearRuntimeCaches(true);
+        window.location.reload();
+      } catch (error) {
+        appReloading = false;
+        showToast('Nao foi possivel limpar o cache agora.');
+      }
+    });
   }
 
   function resetCount() {
@@ -186,13 +207,14 @@
       showToast('A contagem atual ja esta zerada.');
       return;
     }
-    if (!window.confirm(`Zerar a contagem atual de ${state.currentCount} SC? Essa acao nao cria uma parada.`)) return;
-    state.currentCount = 0;
-    persist();
-    render();
-    closeSheet();
-    vibrate([20, 40, 20]);
-    showToast('Contagem atual zerada.');
+    requestConfirmation(`Zerar a contagem atual de ${state.currentCount} SC? Essa acao nao cria uma parada.`, () => {
+      state.currentCount = 0;
+      persist();
+      render();
+      closeSheet();
+      vibrate([20, 40, 20]);
+      showToast('Contagem atual zerada.');
+    });
   }
 
   function saveStop() {
@@ -258,7 +280,7 @@
   }
 
   function summaryText() {
-    const lines = ['CONTA CARGA - RESUMO', `Total geral: ${state.total} SC`, '', 'PARADAS:'];
+    const lines = ['CONTA CARGA - RESUMO', `Data: ${state.session?.date || '-'}`, `Romaneio: ${state.session?.romaneio || '-'}`, `Total geral: ${state.total} SC`, '', 'PARADAS:'];
     state.history.forEach((stop, index) => {
       lines.push(`\nParada #${index + 1}`);
       lines.push(`Contagem atual: ${stop.current} SC`);
@@ -279,11 +301,54 @@
   }
 
   function clearHistory() {
-    if (!state.history.length || !window.confirm('Limpar todo o historico e o total geral?')) return;
-    state = { ...defaultState };
+    if (!state.history.length) return;
+    requestConfirmation('O historico sera apagado e uma nova contagem sera iniciada. Deseja continuar?', () => {
+      state = createDefaultState();
+      persist();
+      render();
+      closeSheet();
+      openSetupModal();
+    });
+  }
+
+  function openSetupModal() {
+    elements.modalBackdrop.hidden = false;
+    elements.setupModal.hidden = false;
+    elements.operationDate.value = state.session?.date || new Date().toISOString().slice(0, 10);
+    elements.romaneioNumber.value = state.session?.romaneio || '';
+    elements.romaneioNumber.focus();
+  }
+
+  function closeModal(modal) {
+    modal.hidden = true;
+    if (elements.setupModal.hidden && elements.confirmModal.hidden) elements.modalBackdrop.hidden = true;
+  }
+
+  function startCount() {
+    if (!elements.operationDate.value || !elements.romaneioNumber.value.trim()) {
+      showToast('Informe a data e o numero do romaneio.');
+      return;
+    }
+    state.session = { date: elements.operationDate.value, romaneio: elements.romaneioNumber.value.trim() };
     persist();
     render();
-    showToast('Historico limpo.');
+    closeModal(elements.setupModal);
+    showToast('Contagem iniciada.');
+  }
+
+  function requestConfirmation(message, onConfirm) {
+    pendingConfirmation = onConfirm;
+    elements.confirmMessage.textContent = message;
+    elements.modalBackdrop.hidden = false;
+    elements.confirmModal.hidden = false;
+    elements.acceptConfirm.focus();
+  }
+
+  function acceptConfirmation() {
+    const action = pendingConfirmation;
+    pendingConfirmation = null;
+    closeModal(elements.confirmModal);
+    action?.();
   }
 
   function showToast(message) {
@@ -377,6 +442,15 @@
   elements.clear.addEventListener('click', clearHistory);
   elements.wake?.addEventListener('click', requestWakeLock);
   elements.cameraTime.addEventListener('input', formatCameraTimeInput);
+  elements.startCount.addEventListener('click', startCount);
+  elements.cancelConfirm.addEventListener('click', () => { pendingConfirmation = null; closeModal(elements.confirmModal); });
+  elements.acceptConfirm.addEventListener('click', acceptConfirmation);
+  elements.modalBackdrop.addEventListener('click', () => {
+    if (!elements.confirmModal.hidden) {
+      pendingConfirmation = null;
+      closeModal(elements.confirmModal);
+    }
+  });
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && state.currentCount > 0) requestWakeLock();
@@ -395,4 +469,5 @@
   }
 
   render();
+  if (!state.session) openSetupModal();
 })();

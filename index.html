@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-  <meta name="theme-color" content="#10231f">
+  <meta name="theme-color" content="#f28c28">
   <meta name="description" content="Contador offline de sacos para conferencia de carga de caminhao.">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
@@ -40,6 +40,7 @@
         <div>
           <p class="eyebrow">REGISTRO</p>
           <h2 id="historyTitle">Paradas salvas</h2>
+          <p class="session-meta" id="sessionMeta">Nova contagem</p>
         </div>
         <span class="stop-count" id="stopCount">0</span>
       </div>
@@ -78,6 +79,30 @@
       <button class="sheet-button save" id="saveButton" type="button"><span aria-hidden="true">&#10003;</span> Salvar parada</button>
       <button class="sheet-button history" id="viewHistoryButton" type="button"><span aria-hidden="true">&#9776;</span> Ver listagem de sacos</button>
       <button class="sheet-button cache" id="clearCacheButton" type="button"><span aria-hidden="true">&#8635;</span> Atualizar aplicativo</button>
+    </div>
+  </section>
+
+  <div class="modal-backdrop" id="modalBackdrop" hidden></div>
+  <section class="app-modal setup-modal" id="setupModal" role="dialog" aria-modal="true" aria-labelledby="setupTitle" hidden>
+    <p class="eyebrow">NOVA CONTAGEM</p>
+    <h2 id="setupTitle">Identifique o romaneio</h2>
+    <p class="modal-summary">Informe os dados do documento antes de iniciar.</p>
+    <label class="form-field" for="operationDate">Data da contagem
+      <input id="operationDate" type="date" autocomplete="off">
+    </label>
+    <label class="form-field" for="romaneioNumber">Numero do romaneio
+      <input id="romaneioNumber" type="text" inputmode="numeric" autocomplete="off" placeholder="Ex.: 12345" maxlength="30">
+    </label>
+    <button class="modal-button primary-modal" id="startCountButton" type="button"><span aria-hidden="true">&#10003;</span> Salvar e iniciar</button>
+  </section>
+
+  <section class="app-modal confirm-modal" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" hidden>
+    <p class="eyebrow">ATENCAO</p>
+    <h2 id="confirmTitle">Confirmar acao</h2>
+    <p class="modal-summary" id="confirmMessage"></p>
+    <div class="modal-actions">
+      <button class="modal-button secondary-modal" id="cancelConfirmButton" type="button">Cancelar</button>
+      <button class="modal-button primary-modal" id="acceptConfirmButton" type="button">Confirmar</button>
     </div>
   </section>
 
