@@ -1,0 +1,12 @@
+{
+  "name": "ContaCarga - Contador de Sacos",
+  "short_name": "ContaCarga",
+  "description": "Contador offline de sacos para conferencia de carga.",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4f1e8",
+  "theme_color": "#10231f",
+  "lang": "pt-BR",
+  "categories": ["business", "productivity", "utilities"]
+}

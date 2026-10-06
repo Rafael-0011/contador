@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#10231f">
+  <meta name="description" content="Contador offline de sacos para conferencia de carga de caminhao.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <title>ContaCarga</title>
+</head>
+<body>
+  <main class="app-shell">
+
+    <section class="counter-panel" id="counterSurface" aria-label="Area de contagem">
+      <div class="status-row">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span id="sessionStatus">Lote em andamento</span>
+      </div>
+      <p class="count-label">CONTAGEM ATUAL</p>
+      <output class="count-value" id="currentCount" aria-live="polite" aria-atomic="true">0</output>
+      <p class="unit">SC</p>
+      <p class="tap-hint">Toque para contar</p>
+      <div class="counter-pulse" aria-hidden="true"></div>
+    </section>
+
+    <section class="quick-actions" aria-label="Acoes rapidas">
+      <button class="action-button secondary" id="undoButton" type="button" disabled>
+        <span aria-hidden="true">&#8617;</span>
+        <span>Desfazer</span>
+      </button>
+      <button class="action-button primary" id="openMenuButton" type="button">
+        <span aria-hidden="true">&#8942;</span>
+        <span>Opcoes</span>
+      </button>
+    </section>
+
+    <section class="history-section" aria-labelledby="historyTitle">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">REGISTRO</p>
+          <h2 id="historyTitle">Paradas salvas</h2>
+        </div>
+        <span class="stop-count" id="stopCount">0</span>
+      </div>
+      <div class="total-strip">
+        <span>Total geral</span>
+        <strong><span id="totalCount">0</span> SC</strong>
+      </div>
+      <div class="history-list" id="historyList">
+        <div class="empty-state" id="emptyState">
+          <span class="empty-icon" aria-hidden="true">&#9678;</span>
+          <p>Nenhuma parada salva ainda.</p>
+          <small>Use a pinça com dois dedos ou toque em Opcoes.</small>
+        </div>
+      </div>
+      <div class="history-actions">
+        <button class="text-button" id="exportButton" type="button" disabled>Copiar resumo</button>
+        <button class="text-button danger" id="clearButton" type="button" disabled>Limpar historico</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
+  <section class="bottom-sheet" id="bottomSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <p class="eyebrow">CONTROLE DO LOTE</p>
+    <h2 id="sheetTitle">O que deseja fazer?</h2>
+    <p class="sheet-summary">Contagem atual: <strong><span id="sheetCount">0</span> SC</strong></p>
+    <label class="time-field" for="cameraTime">
+      Horario da camera
+      <input id="cameraTime" type="text" inputmode="numeric" maxlength="8" placeholder="HH:MM:SS" autocomplete="off" aria-describedby="timeHint">
+      <small id="timeHint">Informe o horario mostrado pela camera.</small>
+    </label>
+    <div class="sheet-actions">
+      <button class="sheet-button continue" id="continueButton" type="button"><span aria-hidden="true">&#9654;</span> Continuar contando</button>
+      <button class="sheet-button reset" id="resetButton" type="button"><span aria-hidden="true">&#8634;</span> Zerar contagem</button>
+      <button class="sheet-button save" id="saveButton" type="button"><span aria-hidden="true">&#10003;</span> Salvar parada</button>
+    </div>
+  </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" defer></script>
+</body>
+</html>
