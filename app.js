@@ -1,11 +1,14 @@
 (() => {
   'use strict';
 
+  const APP_VERSION = '1.0.1';
+  const APP_VERSION_KEY = 'contacarga-app-version';
   const STORAGE_KEY = 'contacarga-state-v1';
   const defaultState = { currentCount: 0, history: [], total: 0 };
   let state = loadState();
   let wakeLock = null;
   let toastTimer;
+  let appReloading = false;
   const pointers = new Map();
   let gesture = { active: false, initialDistance: 0, startCenterY: 0, hasCounted: false, blocked: false };
 
@@ -22,6 +25,7 @@
     continue: document.querySelector('#continueButton'),
     reset: document.querySelector('#resetButton'),
     save: document.querySelector('#saveButton'),
+    clearCache: document.querySelector('#clearCacheButton'),
     historySection: document.querySelector('.history-section'),
     list: document.querySelector('#historyList'),
     total: document.querySelector('#totalCount'),
@@ -32,6 +36,35 @@
     wake: document.querySelector('#wakeButton'),
     status: document.querySelector('#sessionStatus')
   };
+
+  async function clearRuntimeCaches(unregisterServiceWorkers = false) {
+    if ('caches' in window) {
+      const cacheKeys = await caches.keys();
+      await Promise.all(cacheKeys.map((cacheKey) => caches.delete(cacheKey)));
+    }
+    if (unregisterServiceWorkers && 'serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((registration) => registration.unregister()));
+    }
+  }
+
+  async function updateServiceWorkers() {
+    if (!('serviceWorker' in navigator)) return;
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(registrations.map((registration) => registration.update().catch(() => {})));
+  }
+
+  function checkAppVersion() {
+    const storedVersion = localStorage.getItem(APP_VERSION_KEY);
+    if (storedVersion === APP_VERSION) return;
+    localStorage.setItem(APP_VERSION_KEY, APP_VERSION);
+    appReloading = true;
+    Promise.all([clearRuntimeCaches(), updateServiceWorkers()]).finally(() => {
+      window.location.reload();
+    });
+  }
+
+  checkAppVersion();
 
   function loadState() {
     try {
@@ -127,6 +160,24 @@
   function showHistory() {
     closeSheet();
     requestAnimationFrame(() => elements.historySection.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
+
+  async function refreshApplication() {
+    if (!window.confirm('Atualizar o aplicativo e limpar o cache antigo? Seus dados de contagem serao preservados.')) return;
+    if (!window.confirm('Confirmacao final: limpar cache e recarregar agora?')) return;
+    if (appReloading) return;
+    if (!navigator.onLine) {
+      showToast('Conecte-se a internet para atualizar o aplicativo.');
+      return;
+    }
+    appReloading = true;
+    try {
+      await clearRuntimeCaches(true);
+      window.location.reload();
+    } catch (error) {
+      appReloading = false;
+      showToast('Nao foi possivel limpar o cache agora.');
+    }
   }
 
   function resetCount() {
@@ -303,6 +354,7 @@
   elements.save.addEventListener('click', saveStop);
   elements.backdrop.addEventListener('click', closeSheet);
   elements.viewHistory.addEventListener('click', showHistory);
+  elements.clearCache.addEventListener('click', refreshApplication);
   elements.export.addEventListener('click', exportSummary);
   elements.clear.addEventListener('click', clearHistory);
   elements.wake?.addEventListener('click', requestWakeLock);
@@ -313,7 +365,15 @@
   });
 
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (appReloading) return;
+      appReloading = true;
+      window.location.reload();
+    });
+    window.addEventListener('load', async () => {
+      const registration = await navigator.serviceWorker.register('sw.js').catch(() => null);
+      registration?.update();
+    });
   }
 
   render();

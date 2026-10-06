@@ -89,6 +89,7 @@ h2 { margin: 4px 0 0; font-family: Georgia, serif; font-size: clamp(1.35rem, 5vw
 .sheet-button.reset { color: var(--ink); background: #f7d86d; }
 .sheet-button.save { color: var(--surface); background: var(--orange); }
 .sheet-button.history { color: var(--ink); background: var(--line); }
+.sheet-button.cache { color: var(--ink); background: #d9e6c7; }
 .toast { position: fixed; right: 20px; bottom: 20px; left: 20px; z-index: 20; max-width: 500px; margin: auto; padding: 14px 18px; border-radius: 12px; color: var(--surface); background: var(--ink); text-align: center; font-weight: 800; box-shadow: var(--shadow); transform: translateY(160%); transition: transform .2s ease; }
 .toast.is-visible { transform: translateY(0); }
 [hidden] { display: none !important; }

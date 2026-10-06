@@ -56,6 +56,7 @@ Neste projeto, `SC` significa **sacos**.
 - Total geral em destaque.
 - Limpeza do histórico com confirmação.
 - Resumo em texto para copiar e compartilhar.
+- Atualizacao manual do aplicativo dentro do popup de opcoes, com dupla confirmacao.
 
 ### Offline e PWA
 
@@ -87,6 +88,8 @@ contador/
 ├── app.js           # Contagem, gestos, histórico e persistência
 ├── manifest.json    # Configuração da PWA
 ├── sw.js            # Cache e funcionamento offline
+├── _headers         # Headers do Cloudflare Pages na raiz publicada
+├── public/_headers  # Versão para projetos que usam public como diretório publicado
 └── README.md        # Documentação do projeto
 ```
 
@@ -128,6 +131,28 @@ Para interromper o servidor, use `Ctrl+C`.
 6. Salve e faça o deploy.
 
 O Service Worker e os recursos de instalação da PWA funcionam corretamente em HTTPS, como no domínio publicado pelo Cloudflare Pages.
+
+### Cache e atualizações
+
+O controle de versão está no início de `app.js`:
+
+```js
+const APP_VERSION = '1.0.1';
+const APP_VERSION_KEY = 'contacarga-app-version';
+```
+
+Quando `APP_VERSION` muda, o aplicativo:
+
+1. Compara a versão salva no `localStorage`.
+2. Remove caches antigos do Cache Storage.
+3. Solicita atualização dos Service Workers registrados.
+4. Recarrega a página automaticamente.
+
+Os dados da contagem não são apagados nessa atualização. A limpeza manual fica no popup de **Opções**, em **Atualizar aplicativo**, e exige duas confirmações. Ela só é executada com internet disponível para evitar que o app fique sem o shell offline durante o recarregamento.
+
+O Service Worker usa `skipWaiting()` e `clients.claim()` em `sw.js`, enquanto `app.js` chama `registration.update()` e reage a `controllerchange`.
+
+Os arquivos `_headers` desabilitam o cache HTTP para `index.html`, `app.js`, `sw.js` e `manifest.json`. A cópia na raiz é necessária quando a raiz do projeto é publicada diretamente; `public/_headers` atende configurações que usam `public` como diretório de publicação.
 
 ## Decisões técnicas
 
