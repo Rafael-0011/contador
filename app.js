@@ -14,6 +14,7 @@
     currentCount: document.querySelector('#currentCount'),
     undo: document.querySelector('#undoButton'),
     menu: document.querySelector('#openMenuButton'),
+    viewHistory: document.querySelector('#viewHistoryButton'),
     sheet: document.querySelector('#bottomSheet'),
     backdrop: document.querySelector('#sheetBackdrop'),
     sheetCount: document.querySelector('#sheetCount'),
@@ -21,6 +22,7 @@
     continue: document.querySelector('#continueButton'),
     reset: document.querySelector('#resetButton'),
     save: document.querySelector('#saveButton'),
+    historySection: document.querySelector('.history-section'),
     list: document.querySelector('#historyList'),
     total: document.querySelector('#totalCount'),
     stopCount: document.querySelector('#stopCount'),
@@ -109,7 +111,11 @@
     elements.sheet.hidden = true;
     elements.backdrop.hidden = true;
     elements.menu?.focus({ preventScroll: true });
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo(0, 0);
+  }
+
+  function showHistory() {
+    elements.historySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function resetCount() {
@@ -132,12 +138,13 @@
       showToast('Conte pelo menos 1 SC antes de salvar.');
       return;
     }
-    const cameraTime = normalizeCameraTime(elements.cameraTime.value);
-    if (!cameraTime) {
+    const timeResult = parseCameraTime(elements.cameraTime.value);
+    if (timeResult.message) {
       elements.cameraTime.focus();
-      showToast('Informe o horario da camera no formato HH:MM:SS.');
+      showToast(timeResult.message);
       return;
     }
+    const cameraTime = timeResult.normalized;
     const stop = {
       current: state.currentCount,
       accumulated: state.total + state.currentCount,
@@ -147,6 +154,8 @@
     state.total = stop.accumulated;
     state.currentCount = 0;
     elements.cameraTime.value = '';
+    elements.cameraTime.setCustomValidity('');
+    elements.cameraTime.setAttribute('aria-invalid', 'false');
     persist();
     render();
     closeSheet();
@@ -154,14 +163,22 @@
     showToast(`Parada #${state.history.length} salva.`);
   }
 
-  function normalizeCameraTime(value) {
+  function parseCameraTime(value) {
     let normalized = value.trim().replace(/[./-]/g, ':');
     if (/^\d{6}$/.test(normalized)) normalized = `${normalized.slice(0, 2)}:${normalized.slice(2, 4)}:${normalized.slice(4)}`;
     const match = normalized.match(/^(\d{2}):(\d{2}):(\d{2})$/);
-    if (!match) return '';
+    if (!match) return { normalized: '', message: 'Use o formato HH:MM:SS.' };
     const [, hours, minutes, seconds] = match;
-    if (Number(hours) > 23 || Number(minutes) > 59 || Number(seconds) > 59) return '';
-    return `${hours}:${minutes}:${seconds}`;
+    if (Number(hours) > 23) return { normalized: '', message: 'A hora deve estar entre 00 e 23.' };
+    if (Number(minutes) > 59) return { normalized: '', message: 'Os minutos devem estar entre 00 e 59.' };
+    if (Number(seconds) > 59) return { normalized: '', message: 'Os segundos devem estar entre 00 e 59.' };
+    return { normalized: `${hours}:${minutes}:${seconds}`, message: '' };
+  }
+
+  function updateCameraTimeValidity() {
+    const result = parseCameraTime(elements.cameraTime.value);
+    elements.cameraTime.setCustomValidity(result.message);
+    elements.cameraTime.setAttribute('aria-invalid', result.message ? 'true' : 'false');
   }
 
   function summaryText() {
@@ -274,9 +291,11 @@
   elements.reset.addEventListener('click', resetCount);
   elements.save.addEventListener('click', saveStop);
   elements.backdrop.addEventListener('click', closeSheet);
+  elements.viewHistory.addEventListener('click', showHistory);
   elements.export.addEventListener('click', exportSummary);
   elements.clear.addEventListener('click', clearHistory);
   elements.wake?.addEventListener('click', requestWakeLock);
+  elements.cameraTime.addEventListener('input', updateCameraTimeValidity);
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && state.currentCount > 0) requestWakeLock();

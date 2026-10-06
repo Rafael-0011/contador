@@ -33,6 +33,10 @@
         <span aria-hidden="true">&#8942;</span>
         <span>Opcoes</span>
       </button>
+      <button class="action-button history-link" id="viewHistoryButton" type="button">
+        <span aria-hidden="true">&#9776;</span>
+        <span>Ver listagem de sacos</span>
+      </button>
     </section>
 
     <section class="history-section" aria-labelledby="historyTitle">
@@ -69,7 +73,7 @@
     <p class="sheet-summary">Contagem atual: <strong><span id="sheetCount">0</span> SC</strong></p>
     <label class="time-field" for="cameraTime">
       Horario da camera
-      <input id="cameraTime" type="text" inputmode="numeric" maxlength="8" placeholder="HH:MM:SS" autocomplete="off" aria-describedby="timeHint">
+      <input id="cameraTime" type="text" inputmode="numeric" maxlength="8" placeholder="HH:MM:SS" autocomplete="off" aria-describedby="timeHint" aria-invalid="false">
       <small id="timeHint">Informe o horario mostrado pela camera.</small>
     </label>
     <div class="sheet-actions">

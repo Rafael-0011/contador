@@ -47,8 +47,9 @@ h2 { margin: 4px 0 0; font-family: Georgia, serif; font-size: clamp(1.35rem, 5vw
 .count-value { font-family: Georgia, serif; font-size: clamp(7rem, 30vw, 13rem); font-weight: 700; line-height: .9; letter-spacing: -.08em; }
 .unit { margin: 7px 0 0; color: var(--accent); font-size: 1.3rem; font-weight: 900; letter-spacing: .16em; }
 .tap-hint { position: absolute; bottom: 24px; margin: 0; color: #a8b6ae; font-size: .8rem; }
-.quick-actions { display: flex; gap: 12px; padding: 16px 0 28px; }
-.action-button { min-height: 56px; flex: 1; display: flex; align-items: center; justify-content: center; gap: 9px; border-radius: 14px; font-weight: 800; }
+.quick-actions { display: flex; flex-wrap: wrap; gap: 12px; padding: 16px 0 28px; }
+.action-button { min-height: 56px; flex: 1 1 calc(50% - 6px); display: flex; align-items: center; justify-content: center; gap: 9px; border-radius: 14px; font-weight: 800; }
+.action-button.history-link { flex-basis: 100%; }
 .action-button span:first-child { font-size: 1.4rem; }
 .action-button.secondary { color: var(--ink); background: transparent; border: 2px solid var(--line); }
 .action-button.primary { color: var(--ink); background: var(--accent); box-shadow: 0 4px 0 var(--accent-strong); }
@@ -80,6 +81,7 @@ h2 { margin: 4px 0 0; font-family: Georgia, serif; font-size: clamp(1.35rem, 5vw
 .time-field { display: grid; gap: 7px; margin-bottom: 16px; color: var(--ink); font-size: .82rem; font-weight: 900; }
 .time-field input { width: 100%; min-height: 56px; padding: 0 16px; border: 2px solid var(--line); border-radius: 12px; color: var(--ink); background: var(--paper); font: 900 1.35rem Georgia, serif; letter-spacing: .08em; }
 .time-field input:focus { border-color: var(--accent-strong); outline: 3px solid rgba(168,199,22,.25); }
+.time-field input[aria-invalid="true"] { border-color: var(--danger); }
 .time-field small { color: var(--muted); font-size: .72rem; font-weight: 400; }
 .sheet-actions { display: grid; gap: 10px; }
 .sheet-button { min-height: 60px; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 14px; font-weight: 900; }
