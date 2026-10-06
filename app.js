@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '1.0.1';
+  const APP_VERSION = '1.0.2';
   const APP_VERSION_KEY = 'contacarga-app-version';
   const STORAGE_KEY = 'contacarga-state-v1';
   const defaultState = { currentCount: 0, history: [], total: 0 };
@@ -226,15 +226,29 @@
   }
 
   function parseCameraTime(value) {
-    let normalized = value.trim().replace(/[./-]/g, ':');
+    let normalized = value.trim().replace(/\s/g, '').toLowerCase();
     if (/^\d{6}$/.test(normalized)) normalized = `${normalized.slice(0, 2)}:${normalized.slice(2, 4)}:${normalized.slice(4)}`;
+    const displayMatch = normalized.match(/^(\d{2})h(\d{2})m(\d{2})s$/);
+    if (displayMatch) normalized = `${displayMatch[1]}:${displayMatch[2]}:${displayMatch[3]}`;
+    normalized = normalized.replace(/[./-]/g, ':');
     const match = normalized.match(/^(\d{2}):(\d{2}):(\d{2})$/);
-    if (!match) return { normalized: '', message: 'Use o formato HH:MM:SS.' };
+    if (!match) return { normalized: '', message: 'Use o formato HHhMMmSSs.' };
     const [, hours, minutes, seconds] = match;
     if (Number(hours) > 23) return { normalized: '', message: 'A hora deve estar entre 00 e 23.' };
     if (Number(minutes) > 59) return { normalized: '', message: 'Os minutos devem estar entre 00 e 59.' };
     if (Number(seconds) > 59) return { normalized: '', message: 'Os segundos devem estar entre 00 e 59.' };
     return { normalized: `${hours}:${minutes}:${seconds}`, message: '' };
+  }
+
+  function formatCameraTimeInput() {
+    const digits = elements.cameraTime.value.replace(/\D/g, '').slice(0, 6);
+    const parts = [];
+    if (digits.length > 0) parts.push(digits.slice(0, 2));
+    if (digits.length > 2) parts.push(`${digits.slice(2, 4)}`);
+    if (digits.length > 4) parts.push(`${digits.slice(4, 6)}`);
+    const suffixes = ['h', 'm', 's'];
+    elements.cameraTime.value = parts.map((part, index) => `${part}${suffixes[index]}`).join('');
+    updateCameraTimeValidity();
   }
 
   function updateCameraTimeValidity() {
@@ -358,7 +372,7 @@
   elements.export.addEventListener('click', exportSummary);
   elements.clear.addEventListener('click', clearHistory);
   elements.wake?.addEventListener('click', requestWakeLock);
-  elements.cameraTime.addEventListener('input', updateCameraTimeValidity);
+  elements.cameraTime.addEventListener('input', formatCameraTimeInput);
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && state.currentCount > 0) requestWakeLock();

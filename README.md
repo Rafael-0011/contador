@@ -47,8 +47,8 @@ Neste projeto, `SC` significa **sacos**.
 - Continuar a contagem atual.
 - Zerar a contagem atual com confirmação.
 - Salvar uma parada e iniciar o próximo lote.
-- Campo de horário manual no formato `HH:MM:SS`.
-- Aceita separadores como `/` e converte para o formato padrão.
+- Campo de horário manual com máscara visível no formato `HHhMMmSSs`.
+- Aceita entrada numérica como `081532` e converte para `08h15m32s`; o histórico salva no formato `08:15:32`.
 
 ### Histórico
 
