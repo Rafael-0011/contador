@@ -49,7 +49,6 @@ h2 { margin: 4px 0 0; font-family: Georgia, serif; font-size: clamp(1.35rem, 5vw
 .tap-hint { position: absolute; bottom: 24px; margin: 0; color: #a8b6ae; font-size: .8rem; }
 .quick-actions { display: flex; flex-wrap: wrap; gap: 12px; padding: 16px 0 28px; }
 .action-button { min-height: 56px; flex: 1 1 calc(50% - 6px); display: flex; align-items: center; justify-content: center; gap: 9px; border-radius: 14px; font-weight: 800; }
-.action-button.history-link { flex-basis: 100%; }
 .action-button span:first-child { font-size: 1.4rem; }
 .action-button.secondary { color: var(--ink); background: transparent; border: 2px solid var(--line); }
 .action-button.primary { color: var(--ink); background: var(--accent); box-shadow: 0 4px 0 var(--accent-strong); }
@@ -89,6 +88,7 @@ h2 { margin: 4px 0 0; font-family: Georgia, serif; font-size: clamp(1.35rem, 5vw
 .sheet-button.continue { color: var(--surface); background: var(--ink); }
 .sheet-button.reset { color: var(--ink); background: #f7d86d; }
 .sheet-button.save { color: var(--surface); background: var(--orange); }
+.sheet-button.history { color: var(--ink); background: var(--line); }
 .toast { position: fixed; right: 20px; bottom: 20px; left: 20px; z-index: 20; max-width: 500px; margin: auto; padding: 14px 18px; border-radius: 12px; color: var(--surface); background: var(--ink); text-align: center; font-weight: 800; box-shadow: var(--shadow); transform: translateY(160%); transition: transform .2s ease; }
 .toast.is-visible { transform: translateY(0); }
 [hidden] { display: none !important; }

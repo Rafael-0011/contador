@@ -111,11 +111,22 @@
     elements.sheet.hidden = true;
     elements.backdrop.hidden = true;
     elements.menu?.focus({ preventScroll: true });
-    window.scrollTo(0, 0);
+    restoreCounterPosition();
+  }
+
+  function restoreCounterPosition() {
+    const resetScroll = () => {
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      window.scrollTo(0, 0);
+    };
+    resetScroll();
+    requestAnimationFrame(resetScroll);
   }
 
   function showHistory() {
-    elements.historySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    closeSheet();
+    requestAnimationFrame(() => elements.historySection.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   }
 
   function resetCount() {
