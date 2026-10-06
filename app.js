@@ -108,7 +108,8 @@
   function closeSheet() {
     elements.sheet.hidden = true;
     elements.backdrop.hidden = true;
-    elements.menu.focus();
+    elements.menu?.focus({ preventScroll: true });
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
   function resetCount() {
@@ -232,7 +233,7 @@
         initialDistance: 0,
         startCenterY: event.clientY,
         hasCounted: false,
-        blocked: isControlTarget(event.target)
+        blocked: !event.target.closest?.('#counterSurface') || isControlTarget(event.target)
       };
     } else if (pointers.size === 2) {
       gesture.initialDistance = pointerDistance();
