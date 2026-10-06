@@ -44,6 +44,10 @@
         </div>
         <span class="stop-count" id="stopCount">0</span>
       </div>
+      <div class="history-toolbar">
+        <button class="report-button" id="reportButton" type="button"><span aria-hidden="true">&#128196;</span> Gerar relatorios</button>
+        <button class="text-button danger" id="clearButton" type="button" disabled>Limpar historico</button>
+      </div>
       <div class="total-strip">
         <span>Total geral</span>
         <strong><span id="totalCount">0</span> SC</strong>
@@ -54,10 +58,6 @@
           <p>Nenhuma parada salva ainda.</p>
           <small>Use a pinça com dois dedos ou toque em Opcoes.</small>
         </div>
-      </div>
-      <div class="history-actions">
-        <button class="text-button" id="exportButton" type="button" disabled>Copiar resumo</button>
-        <button class="text-button danger" id="clearButton" type="button" disabled>Limpar historico</button>
       </div>
     </section>
   </main>
@@ -104,6 +104,18 @@
       <button class="modal-button secondary-modal" id="cancelConfirmButton" type="button">Cancelar</button>
       <button class="modal-button primary-modal" id="acceptConfirmButton" type="button">Confirmar</button>
     </div>
+  </section>
+
+  <section class="app-modal report-modal" id="reportModal" role="dialog" aria-modal="true" aria-labelledby="reportTitle" hidden>
+    <p class="eyebrow">DOCUMENTOS</p>
+    <h2 id="reportTitle">Gerar relatorios</h2>
+    <p class="modal-summary">Escolha como deseja salvar o resumo desta contagem.</p>
+    <div class="report-actions">
+      <button class="modal-button report-option" id="exportButton" type="button"><span aria-hidden="true">&#128221;</span> Copiar resumo</button>
+      <button class="modal-button report-option excel-option" id="excelButton" type="button"><span aria-hidden="true">&#128202;</span> Baixar Excel</button>
+      <button class="modal-button report-option word-option" id="wordButton" type="button"><span aria-hidden="true">&#128196;</span> Baixar Word</button>
+    </div>
+    <button class="modal-button secondary-modal report-close" id="closeReportButton" type="button">Fechar</button>
   </section>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>

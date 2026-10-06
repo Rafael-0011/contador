@@ -139,7 +139,7 @@ O Service Worker e os recursos de instalação da PWA funcionam corretamente em 
 O controle de versão está no início de `app.js`:
 
 ```js
-const APP_VERSION = '1.0.3';
+const APP_VERSION = '1.0.4';
 const APP_VERSION_KEY = 'contacarga-app-version';
 ```
 

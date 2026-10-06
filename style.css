@@ -29,7 +29,7 @@ body {
 button { font: inherit; }
 button:focus-visible { outline: 4px solid var(--orange); outline-offset: 3px; }
 .app-shell { width: min(100%, 760px); margin: 0 auto; padding: 0 20px max(28px, env(safe-area-inset-bottom)); }
-.topbar, .section-heading, .status-row, .quick-actions, .history-actions, .total-strip { display: flex; align-items: center; justify-content: space-between; }
+.topbar, .section-heading, .status-row, .quick-actions, .history-toolbar, .total-strip { display: flex; align-items: center; justify-content: space-between; }
 .topbar { position: absolute; top: max(18px, env(safe-area-inset-top)); right: 20px; left: 20px; z-index: 2; padding: 10px 0 20px; }
 .eyebrow { margin: 0; color: var(--muted); font-size: .68rem; font-weight: 800; letter-spacing: .14em; }
 h1, h2, p { margin-top: 0; }
@@ -70,7 +70,9 @@ h2 { margin: 4px 0 0; font-family: Georgia, serif; font-size: clamp(1.35rem, 5vw
 .empty-icon { display: block; margin-bottom: 8px; color: var(--accent-strong); font-size: 2.2rem; }
 .empty-state p { margin-bottom: 5px; font-weight: 800; }
 .empty-state small { font-size: .78rem; }
-.history-actions { gap: 14px; padding-top: 18px; }
+.history-toolbar { gap: 14px; padding: 0 0 14px; }
+.report-button { min-height: 48px; padding: 8px 14px; border: 0; border-radius: 10px; color: var(--ink); background: var(--accent); box-shadow: 0 3px 0 var(--accent-strong); cursor: pointer; font-weight: 900; }
+.report-button span { margin-right: 6px; }
 .text-button { min-height: 48px; padding: 8px 0; color: var(--ink); background: transparent; font-weight: 800; text-decoration: underline; text-underline-offset: 4px; }
 .text-button.danger { color: var(--danger); }
 .sheet-backdrop { position: fixed; inset: 0; z-index: 10; background: rgba(16,35,31,.58); backdrop-filter: blur(4px); }
@@ -106,6 +108,12 @@ h2 { margin: 4px 0 0; font-family: Georgia, serif; font-size: clamp(1.35rem, 5vw
 .secondary-modal { color: var(--ink); background: var(--accent); }
 .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .confirm-modal .primary-modal { color: var(--ink); background: var(--accent); box-shadow: 0 4px 0 var(--accent-strong); }
+.report-actions { display: grid; gap: 10px; }
+.report-option { width: 100%; color: var(--ink); background: var(--paper); border: 2px solid var(--line); text-align: left; }
+.report-option span { margin-right: 8px; }
+.excel-option { border-color: var(--accent-strong); background: #fff1b8; }
+.word-option { border-color: var(--orange); background: #ffe0b2; }
+.report-close { width: 100%; margin-top: 16px; }
 [hidden] { display: none !important; }
 @keyframes count-pop { 50% { transform: scale(.985); } }
 @keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }

@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '1.0.3';
+  const APP_VERSION = '1.0.4';
   const APP_VERSION_KEY = 'contacarga-app-version';
   const STORAGE_KEY = 'contacarga-state-v1';
   const createDefaultState = () => ({ currentCount: 0, history: [], total: 0, session: null });
@@ -31,7 +31,12 @@
     total: document.querySelector('#totalCount'),
     stopCount: document.querySelector('#stopCount'),
     sessionMeta: document.querySelector('#sessionMeta'),
+    report: document.querySelector('#reportButton'),
     export: document.querySelector('#exportButton'),
+    excel: document.querySelector('#excelButton'),
+    word: document.querySelector('#wordButton'),
+    reportModal: document.querySelector('#reportModal'),
+    closeReport: document.querySelector('#closeReportButton'),
     clear: document.querySelector('#clearButton'),
     toast: document.querySelector('#toast'),
     wake: document.querySelector('#wakeButton'),
@@ -294,10 +299,55 @@
     const text = summaryText();
     try {
       await navigator.clipboard.writeText(text);
+      closeModal(elements.reportModal);
       showToast('Resumo copiado para enviar no WhatsApp.');
     } catch (error) {
-      window.prompt('Copie o resumo abaixo:', text);
+      showToast('Nao foi possivel copiar o resumo neste navegador.');
     }
+  }
+
+  function downloadFile(content, fileName, type) {
+    const file = new Blob([content], { type });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(file);
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+
+  function reportFileName(extension) {
+    const romaneio = (state.session?.romaneio || 'contagem').replace(/[^a-z0-9_-]/gi, '_');
+    return `relatorio-romaneio-${romaneio}.${extension}`;
+  }
+
+  function exportExcel() {
+    const rows = [
+      ['CONTA CARGA - RELATORIO'],
+      ['Data', state.session?.date || '-'],
+      ['Romaneio', state.session?.romaneio || '-'],
+      ['Total geral', `${state.total} SC`],
+      [],
+      ['Parada', 'Contagem atual', 'Soma acumulada', 'Horario'],
+      ...state.history.map((stop, index) => [`Parada #${index + 1}`, `${stop.current} SC`, `${stop.accumulated} SC`, stop.time])
+    ];
+    const table = rows.map((row) => `<tr>${row.map((cell) => `<td>${String(cell ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;')}</td>`).join('')}</tr>`).join('');
+    const content = `<html><meta charset="utf-8"><table>${table}</table></html>`;
+    downloadFile(content, reportFileName('xls'), 'application/vnd.ms-excel;charset=utf-8');
+    closeModal(elements.reportModal);
+    showToast('Relatorio Excel baixado.');
+  }
+
+  function exportWord() {
+    const content = `<html><meta charset="utf-8"><body><h1>ContaCarga - Relatorio</h1><p><strong>Data:</strong> ${state.session?.date || '-'}</p><p><strong>Romaneio:</strong> ${state.session?.romaneio || '-'}</p><p><strong>Total geral:</strong> ${state.total} SC</p><h2>Paradas</h2><pre>${summaryText().replace(/</g, '&lt;')}</pre></body></html>`;
+    downloadFile(content, reportFileName('doc'), 'application/msword;charset=utf-8');
+    closeModal(elements.reportModal);
+    showToast('Relatorio Word baixado.');
+  }
+
+  function openReportModal() {
+    elements.modalBackdrop.hidden = false;
+    elements.reportModal.hidden = false;
+    elements.export.focus();
   }
 
   function clearHistory() {
@@ -321,7 +371,7 @@
 
   function closeModal(modal) {
     modal.hidden = true;
-    if (elements.setupModal.hidden && elements.confirmModal.hidden) elements.modalBackdrop.hidden = true;
+    if (elements.setupModal.hidden && elements.confirmModal.hidden && elements.reportModal.hidden) elements.modalBackdrop.hidden = true;
   }
 
   function startCount() {
@@ -442,6 +492,10 @@
   elements.clear.addEventListener('click', clearHistory);
   elements.wake?.addEventListener('click', requestWakeLock);
   elements.cameraTime.addEventListener('input', formatCameraTimeInput);
+  elements.report.addEventListener('click', openReportModal);
+  elements.excel.addEventListener('click', exportExcel);
+  elements.word.addEventListener('click', exportWord);
+  elements.closeReport.addEventListener('click', () => closeModal(elements.reportModal));
   elements.startCount.addEventListener('click', startCount);
   elements.cancelConfirm.addEventListener('click', () => { pendingConfirmation = null; closeModal(elements.confirmModal); });
   elements.acceptConfirm.addEventListener('click', acceptConfirmation);
@@ -449,6 +503,8 @@
     if (!elements.confirmModal.hidden) {
       pendingConfirmation = null;
       closeModal(elements.confirmModal);
+    } else if (!elements.reportModal.hidden) {
+      closeModal(elements.reportModal);
     }
   });
 
