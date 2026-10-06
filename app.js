@@ -258,9 +258,13 @@
   }
 
   function summaryText() {
-    const lines = ['CONTA CARGA - RESUMO', `Total geral: ${state.total} SC`, ''];
-    lines.push('# | Contagem atual | Soma acumulada | Horario');
-    state.history.forEach((stop, index) => lines.push(`${index + 1} | ${stop.current} SC | ${stop.accumulated} SC | ${stop.time}`));
+    const lines = ['CONTA CARGA - RESUMO', `Total geral: ${state.total} SC`, '', 'PARADAS:'];
+    state.history.forEach((stop, index) => {
+      lines.push(`\nParada #${index + 1}`);
+      lines.push(`Contagem atual: ${stop.current} SC`);
+      lines.push(`Soma acumulada: ${stop.accumulated} SC`);
+      lines.push(`Horario: ${stop.time}`);
+    });
     return lines.join('\n');
   }
 
