@@ -19,8 +19,11 @@ O ContaCarga transforma o celular em um contador de operação rápido e offline
 - Durante gestos com dois dedos, nenhum saco é contado.
 - O operador pode continuar, zerar ou salvar a parada.
 - Antes de contar, informa a data da operação e o número do romaneio.
+- O romaneio também registra o período do manuseio, início e fim do vídeo da câmera, placa, total previsto de sacos e esteira utilizada.
 - Ao salvar, o horário é informado manualmente conforme a câmera ou a operação.
-- Cada parada registra a contagem atual, a soma acumulada e o horário.
+- Cada parada registra a contagem atual, a soma acumulada, o horário e eventual desconto informado no salvamento.
+- Paradas podem ser editadas com confirmação; divergências registram dois horários e uma descrição.
+- A tela mostra o total em tempo real, somando a contagem atual ao histórico.
 - O histórico permanece salvo mesmo sem internet ou após fechar o navegador.
 - O resumo pode ser copiado para envio por WhatsApp.
 
@@ -48,7 +51,7 @@ Neste projeto, `SC` significa **sacos**.
 - Continuar a contagem atual.
 - Zerar a contagem atual com confirmação.
 - Salvar uma parada e iniciar o próximo lote.
-- Campo de horário manual com máscara visível no formato `HHhMMmSSs`.
+- Campos de horário manuais com máscara visível no formato `HH:MM:SS`.
 - Aceita entrada numérica como `081532` e converte para `08h15m32s`; o histórico salva no formato `08:15:32`.
 
 ### Histórico
@@ -139,7 +142,7 @@ O Service Worker e os recursos de instalação da PWA funcionam corretamente em 
 O controle de versão está no início de `app.js`:
 
 ```js
-const APP_VERSION = '1.0.4';
+const APP_VERSION = '1.0.15';
 const APP_VERSION_KEY = 'contacarga-app-version';
 ```
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'contacarga-v4';
+const CACHE_NAME = 'contacarga-v15';
 const APP_SHELL = ['./', './index.html', './style.css', './app.js', './manifest.json'];
 
 self.addEventListener('install', (event) => {

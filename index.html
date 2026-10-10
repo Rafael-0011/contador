@@ -20,6 +20,7 @@
       <p class="count-label">CONTAGEM ATUAL</p>
       <output class="count-value" id="currentCount" aria-live="polite" aria-atomic="true">0</output>
       <p class="unit">SC</p>
+      <p class="counter-live-total">TOTAL GERAL<strong><span id="liveTotalCount">0</span> SC</strong></p>
       <p class="tap-hint">Toque para contar</p>
       <div class="counter-pulse" aria-hidden="true"></div>
     </section>
@@ -46,6 +47,7 @@
       </div>
       <div class="history-toolbar">
         <button class="report-button" id="reportButton" type="button"><span aria-hidden="true">&#128196;</span> Gerar relatorios</button>
+        <button class="divergence-button" id="divergenceButton" type="button">Divergencia</button>
         <button class="text-button danger" id="clearButton" type="button" disabled>Limpar historico</button>
       </div>
       <div class="total-strip">
@@ -59,6 +61,18 @@
           <small>Use a pinça com dois dedos ou toque em Opcoes.</small>
         </div>
       </div>
+      <div class="divergence-history-section" aria-labelledby="divergenceHistoryTitle">
+        <div class="section-heading compact-heading">
+          <div>
+            <p class="eyebrow">REGISTRO OPERACIONAL</p>
+            <h2 id="divergenceHistoryTitle">Divergencias</h2>
+          </div>
+          <span class="stop-count" id="divergenceCount">0</span>
+        </div>
+        <div class="divergence-list" id="divergenceList">
+          <div class="empty-state"><p>Nenhuma divergencia registrada.</p></div>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -70,12 +84,14 @@
     <p class="sheet-summary">Contagem atual: <strong><span id="sheetCount">0</span> SC</strong></p>
     <label class="time-field" for="cameraTime">
       Horario da camera
-      <input id="cameraTime" type="text" inputmode="numeric" maxlength="9" placeholder="HHhMMmSSs" autocomplete="off" aria-describedby="timeHint" aria-invalid="false">
-      <small id="timeHint">Digite os numeros; o formato HHhMMmSSs sera preenchido automaticamente.</small>
+      <input id="cameraTime" type="text" inputmode="numeric" maxlength="8" placeholder="HH:MM:SS" autocomplete="off" aria-describedby="timeHint" aria-invalid="false">
+      <small id="timeHint">Digite os numeros; o formato HH:MM:SS sera preenchido automaticamente.</small>
     </label>
+    <p class="form-error" id="stopTimeError" role="alert" hidden></p>
     <div class="sheet-actions">
       <button class="sheet-button continue" id="continueButton" type="button"><span aria-hidden="true">&#9654;</span> Continuar contando</button>
       <button class="sheet-button reset" id="resetButton" type="button"><span aria-hidden="true">&#8634;</span> Zerar contagem</button>
+      <button class="sheet-button adjust" id="adjustButton" type="button"><span aria-hidden="true">&#177;</span> Alterar valor</button>
       <button class="sheet-button save" id="saveButton" type="button"><span aria-hidden="true">&#10003;</span> Salvar parada</button>
       <button class="sheet-button history" id="viewHistoryButton" type="button"><span aria-hidden="true">&#9776;</span> Ver listagem de sacos</button>
       <button class="sheet-button cache" id="clearCacheButton" type="button"><span aria-hidden="true">&#8635;</span> Atualizar aplicativo</button>
@@ -87,13 +103,108 @@
     <p class="eyebrow">NOVA CONTAGEM</p>
     <h2 id="setupTitle">Identifique o romaneio</h2>
     <p class="modal-summary">Informe os dados do documento antes de iniciar.</p>
+    <p class="form-error" id="setupError" role="alert" hidden></p>
     <label class="form-field" for="operationDate">Data da contagem
-      <input id="operationDate" type="date" autocomplete="off">
+      <input id="operationDate" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" autocomplete="off">
     </label>
+    <div class="form-grid">
+      <label class="form-field" for="handlingStartDate">Data inicial do manuseio
+        <input id="handlingStartDate" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" autocomplete="off">
+      </label>
+      <label class="form-field" for="handlingEndDate">Data final do manuseio
+        <input id="handlingEndDate" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" autocomplete="off">
+      </label>
+    </div>
     <label class="form-field" for="romaneioNumber">Numero do romaneio
       <input id="romaneioNumber" type="text" inputmode="numeric" autocomplete="off" placeholder="Ex.: 12345" maxlength="30">
     </label>
+    <div class="form-grid">
+      <label class="form-field" for="cameraStartTime">Inicio do video da camera
+        <input id="cameraStartTime" type="text" inputmode="numeric" maxlength="8" placeholder="HH:MM:SS" autocomplete="off">
+      </label>
+      <label class="form-field" for="cameraEndTime">Fim do video da camera
+        <input id="cameraEndTime" type="text" inputmode="numeric" maxlength="8" placeholder="HH:MM:SS" autocomplete="off">
+      </label>
+    </div>
+    <label class="form-field" for="truckPlate">Placa do carro
+      <input id="truckPlate" type="text" autocomplete="off" placeholder="Ex.: ABC1D23" maxlength="8">
+    </label>
+    <div class="form-grid">
+      <label class="form-field" for="romaneioTotal">Total de sacos do romaneio
+        <input id="romaneioTotal" type="number" min="0" step="1" inputmode="numeric" autocomplete="off">
+      </label>
+      <label class="form-field" for="conveyor">Esteira usada
+        <input id="conveyor" type="text" autocomplete="off" placeholder="Ex.: Esteira 01">
+      </label>
+    </div>
     <button class="modal-button primary-modal" id="startCountButton" type="button"><span aria-hidden="true">&#10003;</span> Salvar e iniciar</button>
+  </section>
+
+  <section class="app-modal stop-modal" id="stopModal" role="dialog" aria-modal="true" aria-labelledby="stopTitle" hidden>
+    <p class="eyebrow">SALVAR PARADA</p>
+    <h2 id="stopTitle">Deseja subtrair algum valor?</h2>
+    <p class="modal-summary">Informe uma quantidade para descontar desta parada. Deixe zero se não houver desconto.</p>
+    <label class="form-field" for="subtractCount">Quantidade a subtrair
+      <input id="subtractCount" type="number" min="0" step="1" inputmode="numeric" value="0">
+    </label>
+    <p class="form-error" id="stopError" role="alert" hidden></p>
+    <div class="modal-actions">
+      <button class="modal-button secondary-modal" id="cancelStopButton" type="button">Cancelar</button>
+      <button class="modal-button primary-modal" id="confirmStopButton" type="button">Salvar parada</button>
+    </div>
+  </section>
+
+  <section class="app-modal adjust-modal" id="adjustModal" role="dialog" aria-modal="true" aria-labelledby="adjustTitle" hidden>
+    <p class="eyebrow">AJUSTE DA CONTAGEM</p>
+    <h2 id="adjustTitle">Alterar valor</h2>
+    <p class="modal-summary">Use valor positivo para aumentar e negativo para diminuir a contagem atual.</p>
+    <label class="form-field" for="adjustValue">Valor do ajuste
+      <input id="adjustValue" type="number" step="1" inputmode="numeric" placeholder="Ex.: 5 ou -3">
+    </label>
+    <div class="modal-actions">
+      <button class="modal-button secondary-modal" id="cancelAdjustButton" type="button">Cancelar</button>
+      <button class="modal-button primary-modal" id="confirmAdjustButton" type="button">Aplicar valor</button>
+    </div>
+  </section>
+
+  <section class="app-modal edit-modal" id="editModal" role="dialog" aria-modal="true" aria-labelledby="editTitle" hidden>
+    <p class="eyebrow">REVISAO</p>
+    <h2 id="editTitle">Editar parada</h2>
+    <label class="form-field" for="editCount">Quantidade da parada
+      <input id="editCount" type="number" min="0" step="1" inputmode="numeric">
+    </label>
+    <label class="form-field" for="editSubtraction">Subtracao da parada
+      <input id="editSubtraction" type="number" min="0" step="1" inputmode="numeric" value="0">
+    </label>
+    <label class="form-field" for="editTime">Horario da camera
+      <input id="editTime" type="text" inputmode="numeric" maxlength="8" placeholder="HH:MM:SS">
+    </label>
+    <p class="form-error" id="editError" role="alert" hidden></p>
+    <div class="modal-actions">
+      <button class="modal-button secondary-modal" id="cancelEditButton" type="button">Cancelar</button>
+      <button class="modal-button primary-modal" id="confirmEditButton" type="button">Salvar alteracao</button>
+    </div>
+  </section>
+
+  <section class="app-modal divergence-modal" id="divergenceModal" role="dialog" aria-modal="true" aria-labelledby="divergenceTitle" hidden>
+    <p class="eyebrow">REGISTRO OPERACIONAL</p>
+    <h2 id="divergenceTitle">Divergencia</h2>
+    <div class="form-grid">
+      <label class="form-field" for="divergenceStartTime">Hora inicial
+        <input id="divergenceStartTime" type="text" inputmode="numeric" maxlength="8" placeholder="HH:MM:SS" autocomplete="off">
+      </label>
+      <label class="form-field" for="divergenceEndTime">Hora final
+        <input id="divergenceEndTime" type="text" inputmode="numeric" maxlength="8" placeholder="HH:MM:SS" autocomplete="off">
+      </label>
+    </div>
+    <label class="form-field" for="divergenceText">Texto da divergencia
+      <textarea id="divergenceText" rows="4" placeholder="Descreva o ocorrido"></textarea>
+    </label>
+    <p class="form-error" id="divergenceError" role="alert" hidden></p>
+    <div class="modal-actions">
+      <button class="modal-button secondary-modal" id="cancelDivergenceButton" type="button">Cancelar</button>
+      <button class="modal-button primary-modal" id="saveDivergenceButton" type="button">Salvar</button>
+    </div>
   </section>
 
   <section class="app-modal confirm-modal" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" hidden>
